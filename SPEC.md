@@ -1,60 +1,73 @@
 # Go 遷移規格
 
 ## 目標
-將現有專案調整為 Go + Python 混合架構。
-- Go 負責 Web、API、檔案管理、流程編排
-- Python 負責 YOLO、Siamese、FAISS 與離線訓練
+將專案拆成三段：
+- `Go.exe`：前端、API、啟動與流程控制
+- `Python.exe`：ML 推論服務
+- `models/`：模型與索引檔，獨立放置，不打包進 exe
 
-## 作用範圍
+## 系統分工
 ### Go 端
-- 提供首頁與靜態頁面
+- 提供首頁與靜態資源
 - 接收圖片上傳
 - 驗證參數與檔案格式
-- 呼叫 Python 模型服務
-- 整理回傳結果給前端
+- 啟動與關閉 Python 服務
+- 將 Python 結果轉成前端格式
 
 ### Python 端
 - 虹膜裁切
 - embedding 產生
 - 相似度搜尋
-- 模型訓練與索引更新
+- 對外提供本機 API
+
+### 模型檔
+- `best.pt`
+- `best.pth`
+- `idx.faiss`
+- `meta.csv`
+
+## 服務規格
+### Go.exe
+- 內嵌前端頁面
+- 提供使用者操作入口
+- 代理呼叫 Python API
+
+### Python.exe
+- `POST /compare`
+- `POST /search`
+- `POST /embed`
 
 ## API 規格
 ### `POST /compare`
-輸入：
-- `img1`
-- `img2`
+輸入：`img1`, `img2`
 
-輸出：
-- `similarity`
-- `same_blood`
-- `crop1`
-- `crop2`
+輸出：`similarity`, `same_blood`, `crop1`, `crop2`
 
 ### `POST /search`
-輸入：
-- `image`
-- `k`
+輸入：`image`, `k`
 
-輸出：
-- `query_crop`
-- `results`
+輸出：`query_crop`, `results`
 
 ### `POST /embed`
-輸入：
-- `image`
+輸入：`image`
 
-輸出：
-- `embedding`
+輸出：`embedding`
+
+## 啟動流程
+1. 使用者啟動 `Go.exe`
+2. Go 檢查 `Python.exe` 與模型檔是否存在
+3. Go 啟動 Python 本機服務
+4. 前端透過 Go 操作
+5. Go 轉送請求到 Python
 
 ## 非功能需求
 - Windows 可執行
-- 路徑採相對路徑或環境變數控制
-- 回傳格式穩定
-- 模型服務可獨立部署
+- 路徑以設定檔或相對路徑控制
+- 模型檔可獨立更新
+- Go 與 Python 透過 `127.0.0.1` 溝通
 
 ## 驗收標準
-- Go 可單獨提供 Web 與 API
-- Python 可單獨提供模型服務
+- `Go.exe` 可獨立啟動前端與流程
+- `Python.exe` 可獨立提供模型服務
+- 模型檔獨立存放且可替換
 - 比對與搜尋結果與現行版本一致或接近
-- 前後端整合流程可正常運作

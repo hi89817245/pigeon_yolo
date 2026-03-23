@@ -10,8 +10,8 @@
 - 运行 Flask 服務可直接用 `python project/app.py`
 
 ### 遷移文件
-- `SPEC.md`：Go + Python 混合架構規格
-- `PLAN.md`：遷移工作計畫與進度
+- `SPEC.md`：Go.exe + Python.exe + models 三段式規格
+- `PLAN.md`：三段式打包與遷移工作計畫
 
 ### 啟動方式
 #### 1. 安裝環境
@@ -67,6 +67,12 @@ python project/app.py
 - `crops.py`、`crops2blood.py`、`crops2blood_clean.py`、`pairs.py`：裁切、標註對應與訓練資料產生流程
 - `check.py`、`predict.py`：資料檢查與單張推論
 - `PLAN.md`：開發計畫與待辦紀錄
+
+### 打包方式
+- `Go.exe`：負責前端、API 與流程控制
+- `Python.exe`：負責 ML 推論服務
+- `models/`：獨立放 `best.pt`、`best.pth`、`idx.faiss`、`meta.csv`
+- 兩個執行檔透過 `127.0.0.1` HTTP 溝通，不把模型硬塞進 exe
 
 #### 数据处理
 `python unzip.py`解压图片文件1~12.zip,并统一置于images_all中
