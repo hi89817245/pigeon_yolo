@@ -7,11 +7,13 @@
 - 现在所有脚本都改成以專案目錄為基準的相對路徑，Windows 直接可跑
 - 如果你的資料集不放在專案根目錄，可先設定 `PIGEON_DATA_ROOT`
   - PowerShell：`$env:PIGEON_DATA_ROOT="D:\\your_data_root"`
-- 运行 Flask 服務可直接用 `python project/app.py`
+- 运行 Flask 服務可直接用 `uv run python project/app.py`
 
 ### 遷移文件
 - `SPEC.md`：Go.exe + Python.exe + models 三段式規格
 - `PLAN.md`：三段式打包與遷移工作計畫
+- `config.json`：Go / Python 共用設定
+- `scripts/build_windows.ps1`：Windows 打包腳本
 
 ### 啟動方式
 #### 1. 安裝環境
@@ -29,17 +31,17 @@ uv sync
 - 把原始圖片、標註與血統資料放到專案根目錄，或先設定 `PIGEON_DATA_ROOT`
 - 如果要重新整理資料，可依序執行：
 ```powershell
-python unzip.py
-python yoloData.py
-python train.py
-python check.py
-python crops.py
-python crops2blood.py
-python crops2blood_clean.py
-python pairs.py
-python siamese/train.py
-python siamese/embed_all.py
-python retrieval/build_index.py
+uv run python unzip.py
+uv run python yoloData.py
+uv run python train.py
+uv run python check.py
+uv run python crops.py
+uv run python crops2blood.py
+uv run python crops2blood_clean.py
+uv run python pairs.py
+uv run python siamese/train.py
+uv run python siamese/embed_all.py
+uv run python retrieval/build_index.py
 ```
 
 #### 3. 啟動服務
@@ -53,7 +55,7 @@ go build -o Go.exe .
 ```
 - 若要單獨啟動 Python 模型服務：
 ```powershell
-python python_service/app.py
+uv run python python_service/app.py
 ```
 
 #### 4. 開啟網頁
@@ -93,15 +95,17 @@ python python_service/app.py
 - 兩個執行檔透過 `127.0.0.1` HTTP 溝通，不把模型硬塞進 exe
 - Go 啟動時會優先尋找同目錄的 `python_service.exe`，找不到則回退執行 `python python_service/app.py`
 - Python 可用 `pyinstaller --onefile python_service/app.py` 打包成 `python_service.exe`
+- 推薦直接執行 `scripts/build_windows.ps1` 產生 `dist/Go.exe` 與 `dist/python_service.exe`
+- 打包前請先安裝 `pyinstaller`，例如 `uv pip install pyinstaller`
 
 #### 数据处理
-`python unzip.py`解压图片文件1~12.zip,并统一置于images_all中
+`uv run python unzip.py`解压图片文件1~12.zip,并统一置于images_all中
 
-`python yoloData.py` 将数据处理为yolo格式，输出于pigeon_iris_yolo
+`uv run python yoloData.py` 将数据处理为yolo格式，输出于pigeon_iris_yolo
 ### Yolo模型训练
 本项目使用**Yolov11n.pt**训练，请提前准备好
 
-`python train.py` 参数如下:
+`uv run python train.py` 参数如下:
 
 	epochs=10,
     imgsz=640,
@@ -111,22 +115,22 @@ python python_service/app.py
 
 得到模型**best.pt**
 
-`python check.py` 处理错误图片
+`uv run python check.py` 处理错误图片
 
-`python crops.py ` 获得虹膜切片，存放于crops中
+`uv run python crops.py ` 获得虹膜切片，存放于crops中
 
-`python crops2blood.py` 建立blood_id和对应切片的映射关系
+`uv run python crops2blood.py` 建立blood_id和对应切片的映射关系
 
-`python crops2blood_clean` 清洗null值，得到crops_metadata_clean.csv
+`uv run python crops2blood_clean.py` 清洗null值，得到crops_metadata_clean.csv
 
 ### Siamese embedding
 ##### 数据处理
 
-`python pairs.py`得到pairs.csv作为模型训练数据
+`uv run python pairs.py`得到pairs.csv作为模型训练数据
 
 ##### 模型训练
 
-`python siamese/train.py`
+`uv run python siamese/train.py`
 
 模型参数如下：
 
@@ -141,9 +145,9 @@ python python_service/app.py
 
 用训练好的模型对所有图像生成 embedding
 
-`python siamese/embed_all.py`
+`uv run python siamese/embed_all.py`
 
-构建 FAISS 索引 — `retrieval/build_index.py`
+构建 FAISS 索引 — `uv run python retrieval/build_index.py`
 ### 使用效果
 系统会检索图片q，返回 top-k 匹配，包括 blood_id 和分数
 

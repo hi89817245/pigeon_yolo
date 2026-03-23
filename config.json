@@ -1,0 +1,12 @@
+{
+  "go_port": 8000,
+  "python_port": 8001,
+  "models_dir": "project/assets",
+  "python_executable": "python",
+  "python_script": "python_service/app.py",
+  "python_service_exe": "python_service.exe",
+  "upload_dir": "uploads",
+  "crop_dir": "tmp/crops",
+  "max_upload_mb": 20,
+  "python_start_timeout_sec": 180
+}

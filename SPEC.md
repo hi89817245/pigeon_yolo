@@ -26,10 +26,16 @@
 - `idx.faiss`
 - `meta.csv`
 
+### 設定與打包
+- `config.json`：定義埠號、模型路徑與啟動參數
+- `scripts/build_windows.ps1`：打包 Go.exe、Python.exe 與模型資料夾
+
 ## 目前實作對應
 - `main.go`：Go 入口與 Python 服務啟動器
 - `python_service/app.py`：獨立 Python 模型服務
 - `project/core/iris_pipeline.py`：共用推論流程
+- `config.json`：開發與打包共用設定
+- `scripts/build_windows.ps1`：Windows 打包流程
 
 ## 服務規格
 ### Go.exe
