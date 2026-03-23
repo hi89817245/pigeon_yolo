@@ -9,6 +9,10 @@
   - PowerShell：`$env:PIGEON_DATA_ROOT="D:\\your_data_root"`
 - 运行 Flask 服務可直接用 `python project/app.py`
 
+### 遷移文件
+- `SPEC.md`：Go + Python 混合架構規格
+- `PLAN.md`：遷移工作計畫與進度
+
 ### 啟動方式
 #### 1. 安裝環境
 ```powershell
