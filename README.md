@@ -9,6 +9,22 @@
   - PowerShell：`$env:PIGEON_DATA_ROOT="D:\\your_data_root"`
 - 运行 Flask 服務可直接用 `python project/app.py`
 
+### 目錄結構
+- `project/`：正式可執行的後端與前端
+  - `app.py`：Flask API，提供比對與搜尋
+  - `static/`：前端頁面
+  - `utils/`：YOLO 裁切、embedding、FAISS 搜尋工具
+  - `models/`：Siamese 模型定義與載入
+  - `assets/`：已訓練好的模型與索引檔
+- `siamese/`：Siamese 訓練、推論、產生 embedding 的腳本
+- `retrieval/`：FAISS 索引建立與查詢腳本
+- `train.py`：YOLO 偵測模型訓練入口
+- `yoloData.py`：把原始標註轉成 YOLO 資料格式
+- `unzip.py`：解壓圖片並整理到 `images_all/`
+- `crops.py`、`crops2blood.py`、`crops2blood_clean.py`、`pairs.py`：裁切、標註對應與訓練資料產生流程
+- `check.py`、`predict.py`：資料檢查與單張推論
+- `PLAN.md`：開發計畫與待辦紀錄
+
 #### 数据处理
 `python unzip.py`解压图片文件1~12.zip,并统一置于images_all中
 
