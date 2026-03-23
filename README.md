@@ -2,6 +2,13 @@
 `git clone https://github.com/cci183147/pigeon_yolo`
 
 `uv sync`
+
+### Windows 使用注意
+- 现在所有脚本都改成以專案目錄為基準的相對路徑，Windows 直接可跑
+- 如果你的資料集不放在專案根目錄，可先設定 `PIGEON_DATA_ROOT`
+  - PowerShell：`$env:PIGEON_DATA_ROOT="D:\\your_data_root"`
+- 运行 Flask 服務可直接用 `python project/app.py`
+
 #### 数据处理
 `python unzip.py`解压图片文件1~12.zip,并统一置于images_all中
 

@@ -1,7 +1,12 @@
+import os
+from pathlib import Path
 import pandas as pd
 
-META = "/home/cci/pigeon/datasets/crops_metadata.csv"
-OUT = "/home/cci/pigeon/datasets/crops_metadata_clean.csv"
+ROOT = Path(__file__).resolve().parent
+DATA_ROOT = Path(os.environ.get("PIGEON_DATA_ROOT", ROOT))
+
+META = DATA_ROOT / "crops_metadata.csv"
+OUT = DATA_ROOT / "crops_metadata_clean.csv"
 
 df = pd.read_csv(META)
 

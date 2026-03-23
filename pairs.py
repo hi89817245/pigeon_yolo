@@ -2,9 +2,14 @@ import pandas as pd
 import random
 from itertools import combinations
 from tqdm import tqdm
+from pathlib import Path
+import os
 
-META = "/home/cci/pigeon/datasets/crops_metadata_clean.csv"
-OUT = "/home/cci/pigeon/datasets/pairs.csv"
+ROOT = Path(__file__).resolve().parent
+DATA_ROOT = Path(os.environ.get("PIGEON_DATA_ROOT", ROOT))
+
+META = DATA_ROOT / "crops_metadata_clean.csv"
+OUT = DATA_ROOT / "pairs.csv"
 
 df = pd.read_csv(META)
 

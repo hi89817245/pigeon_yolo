@@ -1,7 +1,10 @@
 from ultralytics import YOLO
-model = YOLO("/home/cci/pigeon/ultralytics/runs/detect/train2/weights/best.pt")
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+model = YOLO(str(ROOT / "project" / "assets" / "best.pt"))
 model.predict(
-    source="/home/cci/pigeon/datasets/images_all/916.jpg",
+    source=str(ROOT / "images_all" / "916.jpg"),
     save=True,
     show=False,
     conf=0.25,

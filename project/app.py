@@ -1,6 +1,12 @@
 from flask import Flask, request, jsonify, send_from_directory, abort, send_file
-import os, uuid, torch
+import os, uuid, sys, torch
+from pathlib import Path
 import numpy as np
+
+BASE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = BASE_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from utils.yolo_crop import IrisCropper
 from utils.embedding import embed_image
@@ -11,13 +17,13 @@ from models.siamese import load_siamese
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SIM_THRESHOLD = 0.8
 
-ASSETS = "assets"
-YOLO_MODEL = f"{ASSETS}/best.pt"
-SIAMESE_MODEL = f"{ASSETS}/best.pth"
-FAISS_INDEX = f"{ASSETS}/idx.faiss"
-META_CSV = f"{ASSETS}/meta.csv"
+ASSETS = BASE_DIR / "assets"
+YOLO_MODEL = ASSETS / "best.pt"
+SIAMESE_MODEL = ASSETS / "best.pth"
+FAISS_INDEX = ASSETS / "idx.faiss"
+META_CSV = ASSETS / "meta.csv"
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = BASE_DIR / "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ---------------------------------------
 
@@ -25,27 +31,27 @@ app = Flask(__name__)
 
 # ---- load once ----
 cropper = IrisCropper(YOLO_MODEL)
-siamese = load_siamese(SIAMESE_MODEL, DEVICE)
-searcher = IrisSearcher(FAISS_INDEX, META_CSV)
+siamese = load_siamese(str(SIAMESE_MODEL), DEVICE)
+searcher = IrisSearcher(str(FAISS_INDEX), str(META_CSV))
 
 
 # -------- frontend --------
 @app.route("/")
 def index():
-    return send_from_directory("static", "index.html")
+    return send_from_directory(str(BASE_DIR / "static"), "index.html")
 
 
 @app.route("/static/<path:path>")
 def static_files(path):
-    return send_from_directory("static", path)
+    return send_from_directory(str(BASE_DIR / "static"), path)
 
 
 # -------- api --------
 def save_upload(file):
     fn = f"{uuid.uuid4().hex}.jpg"
-    path = os.path.join(UPLOAD_DIR, fn)
-    file.save(path)
-    return path
+    path = UPLOAD_DIR / fn
+    file.save(str(path))
+    return str(path)
 
 
 @app.route("/compare", methods=["POST"])
@@ -75,12 +81,7 @@ def compare():
     sim = float((e1 * e2).sum())
     same = sim >= SIM_THRESHOLD
 
-    return {
-        "similarity": sim,
-        "same_blood": same,
-        "crop1": c1,
-        "crop2": c2
-    }
+    return {"similarity": sim, "same_blood": same, "crop1": c1, "crop2": c2}
 
 
 @app.route("/search", methods=["POST"])
@@ -93,24 +94,19 @@ def search():
 
     p = save_upload(f)
 
-
     crop_path = cropper.crop(p)
     if crop_path is None:
         return jsonify({"error": "iris not detected"}), 400
 
     emb = embed_image(siamese, crop_path, DEVICE)
 
-
     results = searcher.search(emb, k)
-
 
     for r in results:
         r["image"] = "/image?path=" + r["path"]
 
-    return jsonify({
-        "query_crop": "/image?path=" + crop_path,
-        "results": results
-    })
+    return jsonify({"query_crop": "/image?path=" + crop_path, "results": results})
+
 
 @app.route("/image")
 def image():
@@ -122,6 +118,7 @@ def image():
         abort(404)
 
     return send_file(path, mimetype="image/jpeg")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

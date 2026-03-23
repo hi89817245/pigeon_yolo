@@ -20,8 +20,11 @@ def check_and_clean_images(image_dir, backup_dir=None, move_corrupted=True):
         backup_dir.mkdir(parents=True, exist_ok=True)
 
     corrupted_files = []
-    all_images = list(image_dir.glob("*.jpg")) + list(image_dir.glob("*.png")) + \
-                 list(image_dir.glob("*.jpeg"))
+    all_images = (
+        list(image_dir.glob("*.jpg"))
+        + list(image_dir.glob("*.png"))
+        + list(image_dir.glob("*.jpeg"))
+    )
 
     print(f"开始检查 {len(all_images)} 张图片...")
 
@@ -64,8 +67,10 @@ def check_and_clean_images(image_dir, backup_dir=None, move_corrupted=True):
 
 # 使用示例
 if __name__ == "__main__":
-    image_dir = "/home/cci/pigeon/datasets/images_all"
-    backup_dir = "/home/cci/pigeon/datasets/corrupted_backup"
+    root = Path(__file__).resolve().parent
+    data_root = Path(os.environ.get("PIGEON_DATA_ROOT", root))
+    image_dir = data_root / "images_all"
+    backup_dir = data_root / "corrupted_backup"
 
     # 检查并清理
     corrupted = check_and_clean_images(image_dir, backup_dir, move_corrupted=True)

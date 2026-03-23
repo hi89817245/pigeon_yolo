@@ -1,14 +1,19 @@
 import os
 import re
+from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
 # ---------------------------------------------------------
 # 配置区（按你的路径填写即可）
 # ---------------------------------------------------------
-CROP_DIR = "/home/cci/pigeon/datasets/crops"
-META_BLOOD = "/home/cci/pigeon/datasets/blood.csv"
-OUT_CSV = "/home/cci/pigeon/datasets/crops_metadata.csv"
+ROOT = Path(__file__).resolve().parent
+DATA_ROOT = Path(os.environ.get("PIGEON_DATA_ROOT", ROOT))
+
+CROP_DIR = DATA_ROOT / "crops"
+META_BLOOD = DATA_ROOT / "blood.csv"
+OUT_CSV = DATA_ROOT / "crops_metadata.csv"
+
 
 # ---------------------------------------------------------
 # 工具函数：从文件名中提取数字 ID
@@ -28,7 +33,7 @@ blood_df = pd.read_csv(
     META_BLOOD,
     header=None,
     engine="python",
-    on_bad_lines="skip"  # 跳过异常行
+    on_bad_lines="skip",  # 跳过异常行
 )
 
 print(f"👉 Loaded blood.csv, total rows (blood lines): {len(blood_df)}")
@@ -75,11 +80,7 @@ for root, _, files in os.walk(CROP_DIR):
         # 获取血统 ID（可能没有）
         blood_id = blood_map.get(img_id, None)
 
-        records.append({
-            "crop_path": crop_path,
-            "img_id": img_id,
-            "blood_id": blood_id
-        })
+        records.append({"crop_path": crop_path, "img_id": img_id, "blood_id": blood_id})
 
 print(f"👉 Total crops processed: {len(records)}")
 print(f"⚠️ Missing image ID in filenames: {missing}")
