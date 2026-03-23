@@ -9,6 +9,45 @@
   - PowerShell：`$env:PIGEON_DATA_ROOT="D:\\your_data_root"`
 - 运行 Flask 服務可直接用 `python project/app.py`
 
+### 啟動方式
+#### 1. 安裝環境
+```powershell
+git clone https://github.com/cci183147/pigeon_yolo
+cd pigeon_yolo
+uv sync
+```
+
+#### 2. 準備資料
+- 把原始圖片、標註與血統資料放到專案根目錄，或先設定 `PIGEON_DATA_ROOT`
+- 如果要重新整理資料，可依序執行：
+```powershell
+python unzip.py
+python yoloData.py
+python train.py
+python check.py
+python crops.py
+python crops2blood.py
+python crops2blood_clean.py
+python pairs.py
+python siamese/train.py
+python siamese/embed_all.py
+python retrieval/build_index.py
+```
+
+#### 3. 啟動服務
+```powershell
+python project/app.py
+```
+
+#### 4. 開啟網頁
+- 瀏覽器開啟 `http://localhost:8000`
+- 可使用「虹膜比對」上傳兩張圖片做比對
+- 也可使用「虹膜搜索」上傳單張圖片查詢 top-k 結果
+
+#### 5. API 說明
+- `POST /compare`：上傳 `img1`、`img2` 兩張圖，回傳相似度與是否同血親
+- `POST /search`：上傳 `image` 與 `k`，回傳裁切圖與 top-k 搜尋結果
+
 ### 目錄結構
 - `project/`：正式可執行的後端與前端
   - `app.py`：Flask API，提供比對與搜尋
