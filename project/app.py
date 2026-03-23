@@ -1,38 +1,22 @@
 from flask import Flask, request, jsonify, send_from_directory, abort, send_file
-import os, uuid, sys, torch
+import os, uuid, sys
 from pathlib import Path
-import numpy as np
 
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from utils.yolo_crop import IrisCropper
-from utils.embedding import embed_image
-from utils.faiss_search import IrisSearcher
-from models.siamese import load_siamese
+from project.core.iris_pipeline import IrisPipeline
 
 # ---------------- CONFIG ----------------
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-SIM_THRESHOLD = 0.8
-
-ASSETS = BASE_DIR / "assets"
-YOLO_MODEL = ASSETS / "best.pt"
-SIAMESE_MODEL = ASSETS / "best.pth"
-FAISS_INDEX = ASSETS / "idx.faiss"
-META_CSV = ASSETS / "meta.csv"
-
 UPLOAD_DIR = BASE_DIR / "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ---------------------------------------
 
 app = Flask(__name__)
 
-# ---- load once ----
-cropper = IrisCropper(YOLO_MODEL)
-siamese = load_siamese(str(SIAMESE_MODEL), DEVICE)
-searcher = IrisSearcher(str(FAISS_INDEX), str(META_CSV))
+pipeline = IrisPipeline(project_dir=BASE_DIR)
 
 
 # -------- frontend --------
@@ -64,24 +48,11 @@ def compare():
     p1 = save_upload(f1)
     p2 = save_upload(f2)
 
-    c1 = cropper.crop(p1)
-    if c1 is None:
-        return {"error": "Image 1 iris not detected or invalid image"}
+    result = pipeline.compare(p1, p2)
+    if result.get("error"):
+        return jsonify(result), 400
 
-    c2 = cropper.crop(p2)
-    if c2 is None:
-        return {"error": "Image 2 iris not detected or invalid image"}
-
-    if c1 is None or c2 is None:
-        return jsonify({"error": "iris not detected"})
-
-    e1 = embed_image(siamese, c1, DEVICE)
-    e2 = embed_image(siamese, c2, DEVICE)
-
-    sim = float((e1 * e2).sum())
-    same = sim >= SIM_THRESHOLD
-
-    return {"similarity": sim, "same_blood": same, "crop1": c1, "crop2": c2}
+    return jsonify(result)
 
 
 @app.route("/search", methods=["POST"])
@@ -94,18 +65,35 @@ def search():
 
     p = save_upload(f)
 
-    crop_path = cropper.crop(p)
-    if crop_path is None:
-        return jsonify({"error": "iris not detected"}), 400
+    result = pipeline.search(p, k)
+    if result.get("error"):
+        return jsonify(result), 400
 
-    emb = embed_image(siamese, crop_path, DEVICE)
-
-    results = searcher.search(emb, k)
-
-    for r in results:
+    for r in result["results"]:
         r["image"] = "/image?path=" + r["path"]
 
-    return jsonify({"query_crop": "/image?path=" + crop_path, "results": results})
+    result["query_crop"] = "/image?path=" + result["query_crop"]
+    return jsonify(result)
+
+
+@app.route("/embed", methods=["POST"])
+def embed():
+    f = request.files.get("image")
+    if not f:
+        return jsonify({"error": "need image"}), 400
+
+    p = save_upload(f)
+    result = pipeline.embed(p)
+    if result.get("error"):
+        return jsonify(result), 400
+
+    result["query_crop"] = "/image?path=" + result["query_crop"]
+    return jsonify(result)
+
+
+@app.route("/health")
+def health():
+    return jsonify({"ok": True})
 
 
 @app.route("/image")

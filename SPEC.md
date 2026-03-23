@@ -26,6 +26,11 @@
 - `idx.faiss`
 - `meta.csv`
 
+## 目前實作對應
+- `main.go`：Go 入口與 Python 服務啟動器
+- `python_service/app.py`：獨立 Python 模型服務
+- `project/core/iris_pipeline.py`：共用推論流程
+
 ## 服務規格
 ### Go.exe
 - 內嵌前端頁面

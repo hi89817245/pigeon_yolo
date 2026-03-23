@@ -21,6 +21,10 @@ cd pigeon_yolo
 uv sync
 ```
 
+#### 1-1. Go 開發環境
+- 安裝 Go 1.22 以上
+- 確認 `go version` 可正常執行
+
 #### 2. 準備資料
 - 把原始圖片、標註與血統資料放到專案根目錄，或先設定 `PIGEON_DATA_ROOT`
 - 如果要重新整理資料，可依序執行：
@@ -39,8 +43,17 @@ python retrieval/build_index.py
 ```
 
 #### 3. 啟動服務
+- 開發模式直接啟動 Go 入口：
 ```powershell
-python project/app.py
+go run .
+```
+- 打包後執行 Go 執行檔：
+```powershell
+go build -o Go.exe .
+```
+- 若要單獨啟動 Python 模型服務：
+```powershell
+python python_service/app.py
 ```
 
 #### 4. 開啟網頁
@@ -51,14 +64,19 @@ python project/app.py
 #### 5. API 說明
 - `POST /compare`：上傳 `img1`、`img2` 兩張圖，回傳相似度與是否同血親
 - `POST /search`：上傳 `image` 與 `k`，回傳裁切圖與 top-k 搜尋結果
+- `POST /embed`：上傳 `image`，回傳裁切圖與 embedding
 
 ### 目錄結構
+- `main.go`：Go 入口，負責前端與 API 代理
+- `go.mod`：Go 模組設定
 - `project/`：正式可執行的後端與前端
   - `app.py`：Flask API，提供比對與搜尋
+  - `core/`：共用推論流程
   - `static/`：前端頁面
   - `utils/`：YOLO 裁切、embedding、FAISS 搜尋工具
   - `models/`：Siamese 模型定義與載入
   - `assets/`：已訓練好的模型與索引檔
+- `python_service/`：獨立 Python 模型服務入口
 - `siamese/`：Siamese 訓練、推論、產生 embedding 的腳本
 - `retrieval/`：FAISS 索引建立與查詢腳本
 - `train.py`：YOLO 偵測模型訓練入口
@@ -73,6 +91,8 @@ python project/app.py
 - `Python.exe`：負責 ML 推論服務
 - `models/`：獨立放 `best.pt`、`best.pth`、`idx.faiss`、`meta.csv`
 - 兩個執行檔透過 `127.0.0.1` HTTP 溝通，不把模型硬塞進 exe
+- Go 啟動時會優先尋找同目錄的 `python_service.exe`，找不到則回退執行 `python python_service/app.py`
+- Python 可用 `pyinstaller --onefile python_service/app.py` 打包成 `python_service.exe`
 
 #### 数据处理
 `python unzip.py`解压图片文件1~12.zip,并统一置于images_all中

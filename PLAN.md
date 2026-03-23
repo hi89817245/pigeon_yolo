@@ -1,15 +1,15 @@
 # PLAN
 
 ## 階段一：拆出 Python.exe
-- [ ] 將 YOLO、Siamese、FAISS 整理成獨立 Python 服務
-- [ ] 固定 `/compare`、`/search`、`/embed` API 格式
+- [x] 將 YOLO、Siamese、FAISS 整理成獨立 Python 服務
+- [x] 固定 `/compare`、`/search`、`/embed` API 格式
 - [ ] 驗證服務可在本機獨立啟動
 
 ## 階段二：建立 Go.exe
-- [ ] 用 Go 內嵌前端頁面
+- [x] 用 Go 內嵌前端頁面
 - [ ] 加入檔案上傳、參數驗證、錯誤處理
-- [ ] 啟動與監控 Python.exe
-- [ ] 代理轉送 API 請求
+- [x] 啟動與監控 Python.exe
+- [x] 代理轉送 API 請求
 
 ## 階段三：模型檔獨立化
 - [ ] 將 `best.pt`、`best.pth`、`idx.faiss`、`meta.csv` 放到獨立資料夾
