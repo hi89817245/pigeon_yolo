@@ -7,7 +7,7 @@
 - 现在所有脚本都改成以專案目錄為基準的相對路徑，Windows 直接可跑
 - 如果你的資料集不放在專案根目錄，可先設定 `PIGEON_DATA_ROOT`
   - PowerShell：`$env:PIGEON_DATA_ROOT="D:\\your_data_root"`
-- 运行 Flask 服務可直接用 `uv run python project/app.py`
+- 运行 Python 模型服務可直接用 `uv run python python_service/app.py`
 
 ### 遷移文件
 - `SPEC.md`：Go.exe + Python.exe + models 三段式規格
